@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model empresa{
+  id Int @default(autoincrement())@id
+  cnpj String @db.VarChar(14) @unique
+  razao_social String
+  name_fantasia String
+  contratos contrato[] @relation("EmpresaContratos")
+ 
+
+}
+
+model contrato {
+  id                Int     @default(autoincrement()) @id
+  nome_do_contrato  String
+  codigo_contrato   String 
+  retencao_tecnica  Float
+  empresa           empresa @relation("EmpresaContratos",fields: [empresaId], references: [id])
+  empresaId         Int
+  notafiscal   nota_fiscal[] @relation("Contrato_nota_fiscal")
+
+}
+
+model nota_fiscal{
+    id                Int     @default(autoincrement()) @id
+    numero_nota Int
+    data_de_emissao DateTime @default(now())
+    data_de_vencimento DateTime
+    valor Float
+    retencao_de_impostos Boolean @default(false)
+    issqn Float?
+    irrf Float?
+    csll Float?
+    cofins Float?
+    inss Float?
+    pis Float?
+    retencao_tecnica Boolean @default(false)
+    valor_retencao_tecnica Float?
+    porcentagem_retencao_tecnica Int
+    contrato_id       Int      // Relaciona com o contrato
+    contrato          contrato @relation("Contrato_nota_fiscal",fields: [contrato_id], references: [id])
+    arquivos_anexados String[] @default([]) // Lista de nomes de arquivos anexados, padrão é lista vazia
+
+
+
+
+}
